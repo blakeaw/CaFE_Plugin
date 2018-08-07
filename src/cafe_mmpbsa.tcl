@@ -18,7 +18,7 @@ namespace eval ::cafe::mmpbsa:: {
         -pb_indi -pb_exdi -pb_scale -pb_perfil -pb_prbrad -pb_linit -pb_maxc
         -pb_bndcon -pb_bcfl -pb_chgm -pb_srfm -pb_swin -pb_sdens -gb
         -gb_exdi -gb_ioncon -gb_sa -gb_sagamma -sa -sa_exe -sa_rad -sa_gamma
-        -sa_beta -sa_prbrad -sa_samples
+        -sa_beta -sa_prbrad -sa_samples -temp
     }
 
     variable topfile ""
@@ -71,6 +71,7 @@ namespace eval ::cafe::mmpbsa:: {
     variable sa_beta 0.0
     variable sa_prbrad 1.4
     variable sa_samples 500
+    variable temp 298.15
 }
 
 # print usage info
@@ -124,6 +125,7 @@ proc ::cafe::mmpbsa::print_usage { } {
     show -info "  -sa_beta <surface offset>        -- default: 0.0"
     show -info "  -sa_prbrad <radius of probe>     -- default: 1.4"
     show -info "  -sa_samples <number of samples>  -- default: 500"
+    show -info "  -temp <temperature>              -- default: 298.15"
     show ""
 }
 
@@ -180,6 +182,7 @@ proc ::cafe::mmpbsa::mmpbsa { args } {
     variable sa_beta
     variable sa_prbrad
     variable sa_samples
+    variable temp
 
     # *********************************************************
     # **************** Do the Preparation Work ****************
@@ -244,6 +247,11 @@ proc ::cafe::mmpbsa::mmpbsa { args } {
                 }
                 -sa {
                     set sa [check_nneg_int $val "sa"]
+                }
+                -temp {
+                    set temp [check_pos_real $val "temp"]
+                    # kT/NA = RT = 1.9859 cal/K/mol * temp K = 0.59210 kcal/mol
+                    set kt2kc [expr 1.9859*$temp/1000.0]
                 }
                 default {
                     if { $key ni $validargs } {
@@ -1513,6 +1521,7 @@ proc ::cafe::mmpbsa::run_apbs { molid prefix selstr } {
     variable pb_swin
     variable pb_sdens
     variable debug
+    variable temp
 
     set sel [atomselect $molid $selstr]
     set grid [expr 1.0/$pb_scale]
@@ -1575,7 +1584,7 @@ proc ::cafe::mmpbsa::run_apbs { molid prefix selstr } {
         puts $apbsin "    srad $pb_prbrad"
         puts $apbsin "    swin $pb_swin"
         puts $apbsin "    sdens $pb_sdens"
-        puts $apbsin "    temp 298.15"
+        puts $apbsin "    temp $temp"
         puts $apbsin "    calcenergy total"
         puts $apbsin "    calcforce no"
         puts $apbsin "end"
@@ -1594,7 +1603,7 @@ proc ::cafe::mmpbsa::run_apbs { molid prefix selstr } {
         puts $apbsin "    srad $pb_prbrad"
         puts $apbsin "    swin $pb_swin"
         puts $apbsin "    sdens $pb_sdens"
-        puts $apbsin "    temp 298.15"
+        puts $apbsin "    temp $temp"
         puts $apbsin "    calcenergy total"
         puts $apbsin "    calcforce no"
         puts $apbsin "end"
@@ -1763,6 +1772,7 @@ proc ::cafe::mmpbsa::run_apbs_apol { molid prefix selstr } {
     variable sa_gamma
     variable sa_beta
     variable debug
+    variable temp
 
     set sa_list { }
     set sel [atomselect $molid $selstr]
@@ -1792,7 +1802,7 @@ proc ::cafe::mmpbsa::run_apbs_apol { molid prefix selstr } {
         puts $apbsin "    srad $sa_prbrad"
         puts $apbsin "    srfm sacc"
         puts $apbsin "    swin 0.3"
-        puts $apbsin "    temp 298.15"
+        puts $apbsin "    temp $temp"
         puts $apbsin "    calcenergy total"
         puts $apbsin "    calcforce no"
         puts $apbsin "end"
@@ -1821,4 +1831,3 @@ proc ::cafe::mmpbsa::run_apbs_apol { molid prefix selstr } {
 
     return $sa_list
 }
-
