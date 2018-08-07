@@ -9,7 +9,9 @@ namespace eval ::cafe::mmpbsa:: {
 
     # global variables for the package
     # kT/NA = RT = 1.9859 cal/K/mol * 298.15 K = 0.59210 kcal/mol
+    # used for delphi energy conversion
     variable kt2kc 0.592
+    # used for APBS energy conversioni
     variable j2cal 0.239
 
     variable validargs {
@@ -251,7 +253,7 @@ proc ::cafe::mmpbsa::mmpbsa { args } {
                 -temp {
                     set temp [check_pos_real $val "temp"]
                     # kT/NA = RT = 1.9859 cal/K/mol * temp K = 0.59210 kcal/mol
-                    set kt2kc [expr 1.9859*$temp/1000.0]
+                    #set kt2kc [expr 1.9859*$temp/1000.0]
                 }
                 default {
                     if { $key ni $validargs } {
